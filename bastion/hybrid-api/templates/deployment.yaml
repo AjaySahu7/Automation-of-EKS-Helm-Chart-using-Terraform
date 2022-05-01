@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    namespace: {{ .Values.Namespace}}
+    labels: 
+          {{- with .Values.main.deployment }}
+          component: {{ .labels}}
+    name: {{ .Name}}
+spec:
+  replicas: {{ .replicaCount}}
+          {{- end }}
+  strategy:
+    type: {{ .Values.strategy}}
+  selector:
+    matchLabels:
+      {{- with .Values.main.deployment }}
+      component: {{ .labels}}
+  template:
+    metadata:
+      labels:
+        component: {{ .labels}}
+      {{- end }}
+    spec:
+      containers:
+        - name: {{ .Values.main.deployment.containerName}}
+          image: {{ .Values.repository}}:{{ .Values.tag}}
+          args:
+          - main:app
+          - --log-config=/config/log_config.json
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.main.configmaps.Name}} 
+          ports:
+          - containerPort: {{ .Values.containerPort}}
+          volumeMounts:
+          {{- with .Values.serviceproviderclass }}
+          - name: {{ .volumeName }}
+            mountPath: {{ .mntPath | quote }}
+            readOnly: {{ .readOnly }} 
+          {{- end }} 
+          env:
+          {{- range .Values.env}}
+          - name: {{ . }}
+            valueFrom:
+              secretKeyRef:
+                name: poc-secret
+                key: {{ . }}
+          {{- end }} 
+      volumes:
+      - name: config
+        configMap:
+          name: config-files
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    namespace: {{ .Values.Namespace}}
+    labels: 
+      {{- with .Values.admin.deployment }}
+      component: {{ .labels}}
+    name: {{ .Name}}
+spec:
+  replicas: {{ .replicaCount}}
+  selector:
+    matchLabels:
+      component: {{ .labels}}
+      {{- end }}
+  strategy:
+    type: {{ .Values.strategy}}
+  
+  template:
+    metadata:
+      labels:
+        component: {{ .Values.admin.deployment.labels}}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountName}}
+      containers:
+        - name: {{ .Values.admin.deployment.containerName}}
+          image: {{ .Values.repository}}:{{ .Values.tag}}
+          args:
+          - admin:app
+          - --log-config=/config/log_config.json
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.admin.configmaps.Name}} 
+          env:
+          {{- range .Values.env}}
+          - name: {{ . }}
+            valueFrom:
+              secretKeyRef:
+                name: poc-secret
+                key: {{ . }}
+          {{- end }} 
+          ports:
+          - containerPort: {{ .Values.containerPort }}
+          volumeMounts:
+          {{- with .Values.serviceproviderclass }}
+          - name: {{ .volumeName }}
+            mountPath: {{ .mntPath | quote }}
+            readOnly: {{ .readOnly }} 
+          {{- end }}    
+      volumes:
+      - name: config
+        configMap:
+          name: config-files

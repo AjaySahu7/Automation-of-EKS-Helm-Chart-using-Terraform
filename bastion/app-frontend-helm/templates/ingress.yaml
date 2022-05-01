@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    {{- with .Values.ingress }}
+    alb.ingress.kubernetes.io/group.name: {{ .groupname}}
+    alb.ingress.kubernetes.io/scheme: {{ .scheme}}
+    alb.ingress.kubernetes.io/target-type: {{ .targettype}}
+    kubernetes.io/ingress.class: {{ .ingressclass}}
+    {{- end }}
+  labels:
+    component: {{ .Values.Name}}
+  name: {{ .Values.ingress.name}}
+  namespace: {{ .Values.Namespace}}
+spec:
+  rules:
+  {{- with .Values.ingress }}
+  - host: {{ .host}}
+    http:
+      paths:
+      - backend:
+          service:
+            name: {{ .servicename}}
+  {{- end }}
+            port:
+              number: {{ .Values.service.svcPort}}
+        path: /
+        pathType: Prefix

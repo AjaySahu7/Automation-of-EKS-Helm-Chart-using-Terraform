@@ -1,0 +1,18 @@
+apiVersion: v1
+data:
+  grafana.ini: |
+    [server]
+    root_url = https://grafana.dev.pennyworks.int
+    [auth.google]
+    enabled = true
+    client_id = 231600399468-r743tb435njv30lc3rgnup1avrjhv2p0.apps.googleusercontent.com
+    client_secret = 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
+    scopes = https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email
+    auth_url = https://accounts.google.com/o/oauth2/auth
+    token_url = https://accounts.google.com/o/oauth2/token
+    allowed_domains = pennyworks.com algoworks.com
+    allow_sign_up = true
+kind: ConfigMap
+metadata:
+  name: ge-config
+  namespace: grafana

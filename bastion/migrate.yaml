@@ -1,0 +1,57 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: pw-dev
+  name: db-migrate-job
+  labels:
+    component: db-migrate
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        component: db-mirgate
+    spec:
+      containers:
+      - name: app
+        image: 
+        args:
+        - migrate
+        env:
+          - name: DB_URL_PREFIX
+            valueFrom:
+              secretKeyRef:
+                name: poc-secret
+                key: DB_URL_PREFIX
+          - name: DB_HOSTNAME
+            valueFrom:
+              secretKeyRef:
+                name: poc-secret
+                key: DB_HOSTNAME
+          - name: DB_PORT
+            valueFrom:
+              secretKeyRef:
+                name: poc-secret
+                key: DB_PORT
+          - name: DB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: poc-secret
+                key: DB_USERNAME
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: poc-secret
+                key: DB_PASSWORD
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: poc-secret
+                key: DB_NAME
+          - name: DB_SCHEMA
+            valueFrom:
+              secretKeyRef:
+                name: poc-secret
+                key: DB_SCHEMA        
+      restartPolicy: Never

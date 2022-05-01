@@ -1,0 +1,23 @@
+apiVersion: v1
+data:
+  ALLOWED_DEPOSIT_TYPES: '["WIRE_US", "ACH_PUSH", "ACH_PULL"]'
+  ALLOWED_WITHDRAWAL_TYPES: '["WIRE_US", "ACH_PLAID"]'
+  API_CORS_ORIGINS: '["https://docs.sandbox.hybridfi.com"]'
+  KYC_DOCS_S3_BUCKET: pw-dev-sandbox-documents
+  PATH_PREFIX: ""
+  SANDBOX_ENABLED: "True"
+kind: ConfigMap
+metadata:
+  name: {{ .Values.main.configmaps.Name}}
+  namespace: {{ .Values.Namespace}}
+---
+apiVersion: v1
+data:
+  API_CORS_ORIGINS: '["https://docs.sandbox.hybridfi.com", "https://admin.sandbox.hybridfi.com",
+    "https://development.d32ku3g78fl0xs.amplifyapp.com"]'
+  KYC_DOCS_S3_BUCKET: pw-dev-sandbox-documents
+  PATH_PREFIX: /admin
+kind: ConfigMap
+metadata:  
+  name: {{ .Values.admin.configmaps.Name}}
+  namespace: {{ .Values.Namespace}}

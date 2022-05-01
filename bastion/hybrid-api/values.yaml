@@ -1,0 +1,56 @@
+Namespace: banking-dev
+containerPort: 8080
+svcPort: 8080
+svcType: ClusterIP
+strategy: RollingUpdate
+repository: <account-id>.dkr.ecr.us-east-2.amazonaws.com/banking-server
+tag: latest
+serviceproviderclass:
+   volumeName: config
+   mntPath: "/config"
+   readOnly: true
+
+main:
+  deployment:
+    Name: main-deployment
+    labels: main-deployment
+    replicaCount: 1
+    containerName: main-container
+  service:
+    svcName: main-service
+  configmaps:
+    Name: main-config-env
+   
+admin:
+  deployment:
+    Name: admin-deployment
+    labels: admin-deployment
+    replicaCount: 1
+    containerName: admin-container
+  service:
+    svcName: admin-service
+  configmaps:
+    Name: admin-config-env
+
+#configmaps
+pennyglobal:
+        Name: docs-main-config-env
+
+env:
+- DB_HOSTNAME
+- DB_NAME
+- DB_PASSWORD
+- DB_PORT
+- DB_SCHEMA
+- DB_URL_PREFIX
+- DB_USERNAME
+- AWS_ACCESS_KEY_ID
+- AWS_DEFAULT_REGION
+- AWS_SECRET_ACCESS_KEY
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  host: api.sandbox.hybridfi.int

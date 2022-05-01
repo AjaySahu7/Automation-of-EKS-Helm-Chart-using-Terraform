@@ -1,0 +1,32 @@
+Namespace: pennyworks-dev
+Name: frontend
+service:
+   containerPort: 80
+   svcName: frontend-service
+   svcType: ClusterIP
+   svcPort: 80
+
+deployment:
+   Name: frontend-deployment
+   replicaCount: 1
+   repository: <account-id>.dkr.ecr.us-east-2.amazonaws.com/app-frontend
+   tag: latest
+   containerName: frontend
+   strategy: Recreate
+   serviceAccountName: webserver-service-account
+
+env:
+  - REACT_APP_AUTH0_DOMAIN
+  - REACT_APP_AUTH0_CLIENT_ID
+  - REACT_APP_AUTH0_AUDIENCE
+  - REACT_APP_API_ENDPOINT
+
+ingress:
+  name: frontend-ingress
+  certificatearn: arn:aws:acm:us-east-2:<account-id>:certificate/29c592e8-d6ac-4eb3-a96c-44a98abfa853
+  groupname: pennyworks
+  scheme: internal
+  targettype: ip
+  ingressclass: alb
+  host: app.sandbox.pennyworks.int
+  servicename: frontend-service

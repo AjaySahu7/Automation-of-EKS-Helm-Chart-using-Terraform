@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    annotations:
+    name: {{ .Values.mainDocs.deployment.Name}}
+    namespace: {{ .Values.Namespace}}
+    labels: 
+          {{- with .Values.mainDocs.deployment }}
+          component: {{ .labels}}
+spec:
+  replicas: {{ .replicaCount}}
+          {{- end }}
+  strategy:
+    type: {{ .Values.strategy}}
+  selector:
+    matchLabels:
+      {{- with .Values.mainDocs.deployment }}
+      component: {{ .labels}}
+  template:
+    metadata:
+      labels:
+        component: {{ .labels}}
+    spec:
+      containers:
+        - name: {{ .containerName}}
+      {{- end }}
+          image: {{ .Values.repository}}:{{ .Values.tag}}
+          args:
+          - docs:app
+          - --log-config=/config/log_config.json
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.mainDocs.configmaps.Name}} 
+          env:
+          {{- range .Values.mainDocs.env}}
+          - name: {{ . }}
+            valueFrom:
+              secretKeyRef:
+                name: docs-main-secret
+                key: {{ . }}
+          {{- end }}
+          ports:
+          - containerPort: {{ .Values.containerPort}}
+          volumeMounts:
+          {{- with .Values.serviceproviderclass }}
+          - name: {{ .volumeName}}
+            mountPath: {{ .mntPath | quote }}
+            readOnly: {{ .readOnly}}
+          {{- end }}
+      restartPolicy: {{ .Values.restartPolicytype}}
+      volumes:
+      - name: config
+        configMap:
+          name: config-files
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: {{ .Values.adminDocs.deployment.Name}}
+    namespace: {{ .Values.Namespace}}
+    labels: 
+      {{- with .Values.adminDocs.deployment }}
+      component: {{ .labels}}
+spec:
+  replicas: {{ .replicaCount}}
+      {{- end }}
+  strategy:
+    type: {{ .Values.strategy}}
+  selector:
+    matchLabels:
+      {{- with .Values.adminDocs.deployment }}
+      component: {{ .labels}} 
+  template:
+    metadata:
+      labels:
+        component: {{ .labels}}
+    spec:
+      containers:
+        - name: {{ .containerName}}
+      {{- end }}
+          image: {{ .Values.repository}}:{{ .Values.tag}}
+          args:
+          - docs:app
+          - --log-config=/config/log_config.json
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.adminDocs.configmaps.Name}} 
+          env:
+          {{- range .Values.adminDocs.env}}
+          - name: {{ . }}
+            valueFrom:
+              secretKeyRef:
+                name: docs-admin-secret
+                key: {{ . }}
+          {{- end }}
+          ports:
+          - containerPort: {{ .Values.containerPort}}
+          volumeMounts:
+          {{- with .Values.serviceproviderclass }}
+          - name: {{ .volumeName}}
+            mountPath: {{ .mntPath | quote }}
+            readOnly: {{ .readOnly}}
+          {{- end }}
+      restartPolicy: {{ .Values.restartPolicytype}}
+      volumes:
+      - name: config
+        configMap:
+          name: config-files

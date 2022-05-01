@@ -1,0 +1,48 @@
+Namespace: banking-dev
+containerPort: 8080
+svcPort: 8080
+svcType: ClusterIP
+strategy: RollingUpdate
+repository: <account-id>.dkr.ecr.us-east-2.amazonaws.com/banking-server
+tag: latest
+restartPolicytype: Always
+
+serviceproviderclass:
+   volumeName: config
+   mntPath: "/config"
+   readOnly: true
+
+mainDocs:
+  deployment:
+    Name: main-docs-deployment
+    labels: main-docs
+    replicaCount: 1
+    containerName: main-docs-container
+  service:
+    svcName: main-docs-service
+  configmaps:
+    Name: docs-main-config-env
+  env:
+  - DOCS_USERNAME
+  - DOCS_PASSWORD
+  - JWT_ALGORITHM
+  - JWT_SECRET_KEY
+   
+adminDocs:
+  deployment:
+    Name: admin-docs-deployment
+    labels: admin-docs
+    replicaCount: 1
+    containerName: admin-docs-container
+  service:
+    svcName: admin-docs-service
+  configmaps:
+    Name: admin-docs-config-env
+  env:
+  - DOCS_USERNAME
+  - DOCS_PASSWORD
+  - JWT_ALGORITHM
+  - JWT_SECRET_KEY
+
+ingress:
+  host: docs.sandbox.hybridfi.int

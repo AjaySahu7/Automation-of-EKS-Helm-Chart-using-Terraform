@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.Name}}
+  namespace: {{ .Values.Namespace}}
+  labels:
+    component: {{ .Values.Name}}
+spec:
+  replicas: {{ .Values.deployment.replicaCount}}
+  selector:
+    matchLabels:
+      component: {{ .Values.Name}}
+  strategy:
+    {{- with .Values.deployment }}
+    type: {{ .strategy}}
+  template:
+    metadata:
+    {{- end }}
+      labels:
+        component: {{ .Values.Name}}
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: {{ .Values.pennyglobal.Name}}
+        env:
+        {{- range .Values.env}}
+          - name: {{ . }}
+            valueFrom:
+              secretKeyRef:
+                name: app-backend-secret
+                key: {{ . }}
+          
+         {{- end }}
+        {{- with .Values.deployment }}
+        image: {{ .repository}}:{{ .tag}}
+        name: {{ .containerName}}
+        {{- end }}
+        ports:
+        - containerPort: {{ .Values.service.containerPort}}
+        volumeMounts:
+        {{- with .Values.serviceproviderclass }}
+        - mountPath: {{ .mntPath}}
+          name: {{ .volumeName}}
+      volumes:
+      - name: {{ .volumeName}}
+        persistentVolumeClaim:
+          claimName: {{ .claimName}}
+        {{- end }}
+      initContainers:
+      - command:
+        - node
+        - ./dist/migrate
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.pennyglobal.Name}}
+        env:
+          {{- range .Values.initenv}}
+          - name: {{ . }}
+            valueFrom:
+              secretKeyRef:
+                name: app-backend-secret
+                key: {{ . }}
+          {{- end }}   
+
+        {{- with .Values.deployment }}   
+        image: {{ .repository}}:{{ .tag }}
+        name: {{ .initContainer}}
+        {{- end }}
+      securityContext:
+        {{- with .Values.securityContext }}
+        fsGroup: {{ .fsGroup}}
+        fsGroupChangePolicy: {{ .fsGroupChangePolicy}}
+        {{- end }}

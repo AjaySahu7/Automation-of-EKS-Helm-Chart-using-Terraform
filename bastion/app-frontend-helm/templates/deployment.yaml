@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.Name}}
+  namespace: {{ .Values.Namespace}}
+  labels:
+    component: {{ .Values.Name}}
+spec:
+  replicas: {{ .Values.deployment.replicaCount}}
+  selector:
+    matchLabels:
+      component: {{ .Values.Name}}
+  strategy:
+    {{- with .Values.deployment }}
+    type: {{ .strategy}}
+  template:
+    metadata:
+    {{- end }}
+      labels:
+        component: {{ .Values.Name}}
+    spec:
+      containers:
+      - env:
+        {{- range .Values.env}}
+          - name: {{ . }}
+            valueFrom:
+              secretKeyRef:
+                name: frontend-secret
+                key: {{ . }}
+         {{- end }}
+        {{- with .Values.deployment }}
+        image: {{ .repository}}:{{ .tag}}
+        name: {{ .containerName}}
+        {{- end }}
+        ports:
+        - containerPort: {{ .Values.service.containerPort}}
+      

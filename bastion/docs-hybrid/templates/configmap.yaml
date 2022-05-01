@@ -1,0 +1,90 @@
+apiVersion: v1
+data:
+  DOCS_TARGET_APP: MAIN
+  DOCS_TARGET_SERVERS: '[{"url": "https://api.sandbox.hybridfi.com", "description":
+    "dev server"}]'
+  JWT_TOKEN_TTL: "3600"
+  SANDBOX_ENABLED: "True"
+kind: ConfigMap
+metadata:
+  name: {{ .Values.mainDocs.configmaps.Name}}
+  namespace: {{ .Values.Namespace}}
+---
+apiVersion: v1
+data:
+  DOCS_TARGET_APP: ADMIN
+  DOCS_TARGET_SERVERS: '[{"url": "https://api.dev.hybridfi.com", "description": "dev
+    server"}]'
+  JWT_TOKEN_TTL: "3600"
+  PATH_PREFIX: /admin
+kind: ConfigMap
+metadata:
+  name: {{ .Values.adminDocs.configmaps.Name}}
+  namespace: {{ .Values.Namespace}}
+---
+apiVersion: v1
+data:
+  docs-admin.env: |+
+    PATH_PREFIX=/admin
+    DOCS_TARGET_APP=ADMIN
+    DOCS_TARGET_SERVERS=[{"url": "https://api.dev.hybridfi.com", "description": "dev server"}]
+    JWT_TOKEN_TTL=3600
+
+  log_config.json: |+
+    {
+        "version": 1,
+        "disable_existing_loggers": false,
+        "formatters": {
+            "default": {
+                "()": "uvicorn.logging.DefaultFormatter",
+                "fmt": "%(asctime)s.%(msecs)03d | %(levelprefix)s %(name)s: %(message)s",
+                "datefmt": "%Y-%m-%d %H:%M:%S",
+                "use_colors": true
+            },
+            "access": {
+                "()": "uvicorn.logging.AccessFormatter",
+                "fmt": "%(asctime)s.%(msecs)03d | %(levelprefix)s %(client_addr)s - \"%(request_line)s\" %(status_code)s",
+                "datefmt": "%Y-%m-%d %H:%M:%S"
+            }
+        },
+        "handlers": {
+            "default": {
+                "formatter": "default",
+                "class": "logging.StreamHandler",
+                "stream": "ext://sys.stderr"
+            },
+            "access": {
+                "formatter": "access",
+                "class": "logging.StreamHandler",
+                "stream": "ext://sys.stdout"
+            }
+        },
+        "loggers": {
+            "banking_server": {
+                "handlers": [
+                    "default"
+                ],
+                "level": "INFO"
+            },
+            "uvicorn": {
+                "handlers": [
+                    "default"
+                ],
+                "level": "INFO"
+            },
+            "uvicorn.error": {
+                "level": "INFO"
+            },
+            "uvicorn.access": {
+                "handlers": [
+                    "access"
+                ],
+                "level": "INFO",
+                "propagate": false
+            }
+        }
+    }
+kind: ConfigMap
+metadata:
+  name: config-files
+  namespace: {{ .Values.Namespace}}

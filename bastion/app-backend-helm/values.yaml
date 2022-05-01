@@ -1,0 +1,87 @@
+Namespace: pw-dev
+Name: node
+service:
+   containerPort: 3000
+   svcName: node-service
+   svcType: ClusterIP
+   svcPort: 80
+
+
+deployment:
+   Name: node-deployment
+   replicaCount: 1
+   repository: <account-id>.dkr.ecr.us-east-2.amazonaws.com/app-backend
+   tag: latest
+   containerName: app
+   initContainer: migrate
+   strategy: Recreate
+   serviceAccountName: webserver-service-account
+
+#configmaps
+pennyglobal:
+  Name: node-config-9ccb5hkc45
+
+env:
+  - API_VERSION	
+  - AUTH0_ALGORITHM
+  - AUTH0_AUDIENCE	
+  - AUTH0_CLIENT_ID	
+  - AUTH0_CLIENT_SECRET	
+  - AUTH0_DEFAULT_AUDIENCE	
+  - AUTH0_ISSUER	
+  - AUTH0_JWKS_URI	
+  - AUTH0_SECRET	
+  - BANKING_API_URL	
+  - CUSTOMER_IO_API_KEY	
+  - CUSTOMER_IO_REROUTE_EMAIL	
+  - DB_DATABASE	
+  - DB_HOST
+  - DB_PASSWORD
+  - DB_PORT
+  - DB_SSL	
+  - DB_SSL_INSECURE	
+  - DB_USERNAME
+  #- FILES_ABSOLUTE_BASE_DIR	
+  - FILES_BASE_DIR
+  - FILES_CLEANUP_INTERVAL_IN_MINUTES	
+  - GITLAB_CI_DOCKER_PASSWORD	
+  - GITLAB_CI_DOCKER_USERNAME	
+  - PLAID_CLIENT_ID	
+  - PLAID_CLIENT_NAME	
+  - PLAID_COUNTRY_CODES	
+  - PLAID_ENV	
+  - PLAID_LANGUAGE	
+  - PLAID_PRODUCTS	
+  - PLAID_REDIRECT_URI	
+  - PLAID_SANDBOX_INSTITUTION	
+  - PLAID_SECRET	
+  - PW_SECRET	
+  - SENTRY_DSN	
+  - SETTINGS_ONLY_ALLOW_ACCREDITED_INVESTORS	
+  - SSH_PRIVATE_KEY_AWS	
+  - DB_SCHEMA
+  
+initenv:
+  - DB_DATABASE
+  - DB_HOST
+  - DB_PASSWORD
+  - DB_USERNAME
+
+serviceproviderclass:
+   volumeName: vol-node
+   claimName: node-pvc
+   mntPath: /home/node/app/public/files
+
+securityContext:
+  fsGroup: 33
+  fsGroupChangePolicy: OnRootMismatch
+
+ingress:
+  name: ing-node-svc
+  certificatearn: arn:aws:acm:us-east-2:<account-id>:certificate/19ae4dd1-fcf6-4302-b7d8-cbf394460772
+  groupname: pw
+  scheme: internal
+  targettype: ip
+  ingressclass: alb
+  host: api.sandbox.pw.int
+  servicename: node-service

@@ -1,0 +1,23 @@
+apiVersion: v1
+data:
+  AUTH0_AUDIENCE: https://api.dev.pw.com/
+  AUTH0_DEFAULT_AUDIENCE: https://pw.us.auth0.com/
+  AUTH0_ISSUER: https://auth.dev.pw.com/
+  AUTH0_JWKS_URI: https://pw.us.auth0.com/.well-known/jwks.json
+  BANKING_API_URL: https://api.dev.hybridfi.com
+  CUSTOMER_IO_REROUTE_EMAIL: dev-app-notifications@pw.com
+  DB_SSL: ""
+  DEMO_ACTIVE: "false"
+  DEMO_WITHDRAW_BALANCE_AMOUNT: "10000"
+  FILES_ABSOLUTE_BASE_DIR: /home/node/app/public/files
+  FILES_BASE_DIR: files
+  FILES_CLEANUP_INTERVAL_IN_MINUTES: "1440"
+  PLAID_COUNTRY_CODES: US,CA
+  PLAID_LANGUAGE: en
+  PLAID_PRODUCTS: auth,transactions
+  PLAID_REDIRECT_URI: ""
+  SETTINGS_ONLY_ALLOW_ACCREDITED_INVESTORS: "false"
+kind: ConfigMap
+metadata:
+  name: {{ .Values.pennyglobal.Name}}
+  namespace: {{ .Values.Namespace}}
